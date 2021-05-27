@@ -1,36 +1,38 @@
+import { createSlice } from '@reduxjs/toolkit';
+
 export const CATEGORIES = ['housing', 'food', 'transportation', 'utilities', 'clothing', 'healthcare', 'personal', 'education', 'entertainment'];
 const initialState = Object.fromEntries(CATEGORIES.map(category => [category, []]))
 
-export const addTransaction = (transaction) => {
-  return {
-    type: 'transactions/addTransaction',
-    payload: transaction
-  }
-}
+export const transactionsSlice = createSlice({
+  name: 'transactions',
+  initialState: initialState,
+  reducers: {
+    addTransaction: (state, action) => {
+      // 1. Find the category in `state` that matches the `category` property on `action.payload` 
 
-export const deleteTransaction = (transaction) => {
-  return {
-    type: 'transactions/deleteTransaction',
-    payload: transaction
+    // 2. Add the new transaction (`action.payload`) to that category's transaction array.
+
+    state[action.payload.category].push(action.payload);
+
+    },
+    deleteTransaction: (state, action) => {
+      // 1. Find the category in `state` that matches the `category` property on `action.payload` 
+ 
+    // 2.  Filter out the old transaction (the transaction with an `id` matching the `id` property on `action.payload`) from that category's transaction array.
+
+    const index = state[action.payload.category].findIndex(transaction => transaction.id !== action.payload.id);
+      state[action.payload.category].splice(index, 1);
+
+    }
   }
-}
+})
 
 export const selectTransactions = (state) => state.transactions;
 export const selectFlattenedTransactions = (state) => Object.values(state.transactions).reduce((a,b) => [...a, ...b], []);
 
-const transactionsReducer = (state = initialState, action) => {
-  let newTransactionsForCategory;
-  switch (action.type) {
-    case 'transactions/addTransaction':
-      newTransactionsForCategory = [...state[action.payload.category].slice(), action.payload]
-      return { ...state, [action.payload.category]: newTransactionsForCategory}
-    case 'transactions/deleteTransaction':
-      const deletedIndex = state[action.payload.category].findIndex(transaction => transaction.id === action.payload.id);
-      newTransactionsForCategory = state[action.payload.category].filter((item, index) => index !== deletedIndex)
-      return { ...state, [action.payload.category]: newTransactionsForCategory}
-    default:
-      return state;
-  }
-}
+export const {
+  addTransaction,
+  deleteTransaction
+} = transactionsSlice.actions;
 
-export default transactionsReducer;
+export default transactionsSlice.reducer;
